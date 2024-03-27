@@ -33,6 +33,7 @@ exports.sendMessage = async (req, res, next) => {
     next(error);
   }
 };
+
 exports.sendBulkMessage = async (req, res, next) => {
   try {
     const sessionId =
@@ -69,4 +70,40 @@ exports.sendBulkMessage = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+exports.sendPdf = async (req, res, next) => {
+try {
+let to = req.body.to || req.query.to;
+let media = req.body.media || req.query.media;
+let isGroup = req.body.isGroup || req.query.isGroup;
+const sessionId =
+req.body.session || req.query.session || req.headers.session;
+
+if (!to || !media) throw new ValidationError("Missing Parameters");
+
+const receiver = to;
+const filename = media;
+const document = fs.readFileSync(media); // return Buffer
+
+if (!sessionId) throw new ValidationError("Session Not Founds");
+const send = await whatsapp.sendDocument({
+  sessionId,
+  to: receiver,
+  isGroup: !!isGroup,
+  filename: filename,
+  media: document,
+});
+
+res.status(200).json(
+  responseSuccessWithData({
+    id: send?.key?.id,
+    status: send?.status,
+    message: send?.message?.extendedTextMessage?.caption || "Not Text",
+    remoteJid: send?.key?.remoteJid,
+  })
+);
+} catch (error) {
+next(error);
+}
 };

@@ -1,6 +1,7 @@
 const whatsapp = require("wa-multi-session");
 const ValidationError = require("../../utils/error");
 const { responseSuccessWithData } = require("../../utils/response");
+const fs = require("fs");
 
 exports.sendMessage = async (req, res, next) => {
   try {
